@@ -1,30 +1,5 @@
----
+
 title: "assignment_3"
-format: html
-editor_options: 
-  chunk_output_type: console
----
-
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
-```{r}
-1 + 1
-```
-
-You can add options to executable code like this 
-
-```{r}
-#| echo: false
-2 * 2
-```
-
-The `echo: false` option disables the printing of code (only output is displayed).
 
 
 ## introduksjon
@@ -32,17 +7,14 @@ The `echo: false` option disables the printing of code (only output is displayed
 
 ## I tillegg til ein enkel analyse av enkelte utvalg, skal eg utføre fleire simuleringer for å forstå korleis utvalgsstørrelsen og variabiliteten påverker våre statistiske estimater. Dette vil gi meg ein innsikt i viktige statistiske begreper som estimater, standardfeil, t-verdi og p-verdi, og korleis desse påverkes av ulik utvalgsstørrelse og variabilitet i populasjonen.
 
-
-
-
-
-
-
-
-
+#installering av nødvendige packages og aktivering av pakkene
 ```{r}
 library(tidyverse)
 library(ggplot2)
+library(pwr)
+library(dplyr)
+install.packages("pwr")
+install.packages("dplyr")
 
 set.seed(1)
 population <- rnorm(1000000, mean = 1.5, sd = 3)
@@ -59,54 +31,8 @@ m2 <- lm(y ~ 1, data = samp2)
 summary(m1)
 ```
 
-
-
-```{r}
-set.seed(1)
-
-population <- rnorm(1000000, mean = 1.5, sd = 3)
-
-
-samp1 <- data.frame(y = sample(population, 8, replace = FALSE))  
-samp2 <- data.frame(y = sample(population, 40, replace = FALSE)) 
-
-
-m1 <- lm(y ~ 1, data = samp1)  
-m2 <- lm(y ~ 1, data = samp2) 
-
-
-summary(m2)
-
-
-mean_samp1 <- mean(samp1$y)
-sd_samp1 <- sd(samp1$y)
-
-mean_samp2 <- mean(samp2$y)
-sd_samp2 <- sd(samp2$y)
-
-
-se_samp1 <- sd_samp1 / sqrt(8)
-se_samp2 <- sd_samp2 / sqrt(40)
-
-
-t_value_samp1 <- mean_samp1 / se_samp1
-t_value_samp2 <- mean_samp2 / se_samp2
-
-
-cat("Utvalg 1 (n=8):\n")
-cat("  Gjennomsnitt:", mean_samp1, "\n")
-cat("  Standardavvik:", sd_samp1, "\n")
-cat("  Standardfeil:", se_samp1, "\n")
-cat("  t-verdi:", t_value_samp1, "\n\n")
-
-cat("Utvalg 2 (n=40):\n")
-cat("  Gjennomsnitt:", mean_samp2, "\n")
-cat("  Standardavvik:", sd_samp2, "\n")
-cat("  Standardfeil:", se_samp2, "\n")
-cat("  t-verdi:", t_value_samp2, "\n")
-```
-
-1. Forklaring av estimering, standardfeil, t-verdi og p-verdi fra regresjonsmodellene m1 og m2:
+#1.
+#Forklaring av estimering, standardfeil, t-verdi og p-verdi fra regresjonsmodellene m1 og m2:
 Estimate: Estimatet i regresjonsmodellen er gjennomsnittsverdien i utvalget ditt. For m1 er dette gjennomsnittet for et utvalg på 8, og for m2 er det gjennomsnittet for et utvalg på 40.
 
 For eksempel, i m1 er estimatet 1.84. Dette betyr at gjennomsnittlig forskjell mellom de to behandlingene i dette utvalget er 1.84.
@@ -118,13 +44,14 @@ t-value: t-verdien er et forhold mellom estimatet og standardfeilen: t = estimat
 For m1 er t-verdien 1.47, som betyr at estimatet er omtrent 1.47 standardfeiler unna null.
 p-value: P-verdien viser sannsynligheten for å observere en t-verdi minst så ekstrem som den vi har, under antagelsen om at nullhypotesen er sann (at det ikke er noen forskjell mellom behandlingene). En høy p-verdi (som i m1 på 0.185) indikerer at vi ikke kan avvise nullhypotesen.
 
-2. #for å finne p-verdiene for m1 og m2 gjer e følgande
 
+#for å finne p-verdiene for m1 og m2 gjer e følgande
 ```{r}
 summary(m1)$coefficients[1, 4]
 summary(m2)$coefficients[1, 4]
 
 ```
+#2.
 ## Her ser vi at p-verdien til m1 er 0.185, og p-verdien til m2 er 0.002. Dermed er m2 under en p-verdi på 0.05, som indikerer at effekten er statistisk signifikant og lavere sansynlighet for at det skylder tilfeldige variasjoner. Større utvalgsstørrelser reduserer standardfeilen og øker sjansen for å oppdage en statistisk signifikant effekt. Dette skyldes at større utvalg gir et mer presist estimat av populasjonsgjennomsnittet.
 
 #3
@@ -132,8 +59,8 @@ summary(m2)$coefficients[1, 4]
 
 
 
+#lage dataframes for å lagre estimatene
 ```{r}
-# Create data frames to store the model estimates
 results_8 <- data.frame(estimate = rep(NA, 1000), 
                       se = rep(NA, 1000), 
                       pval = rep(NA, 1000), 
@@ -175,7 +102,7 @@ for(i in 1:1000) {
 results <- bind_rows(results_8, results_40)
 ```
 
-#4
+
 
 # for å finne verdiene for standardavviket og den gjennomsnittlege SE-verdien bruker eg følgande kommando
 ```{r}
@@ -188,13 +115,12 @@ mean(results_8$se)
 mean(results_40$se)
 
 ```
+#4.
+##Sjølv om utvalgsstørrelsen er veldig forskjellig (40 mot 8), ser eg at SE og SD er ganske like fordi variabiliteten i dataene (SD) er lav i begge gruppene. SE justeres av utvalgsstørrelsen, men når SD er lav, blir denne justeringen mindre merkbar, spesielt i små grupper. Dette er grunnen til at SE og SD er nærme hverandre i begge grupper til tross for forskjellen i utvalgsstørrelse.
 
-###Sjølv om utvalgsstørrelsen er veldig forskjellig (40 mot 8), ser eg at SE og SD er ganske like fordi variabiliteten i dataene (SD) er lav i begge gruppene. SE justeres av utvalgsstørrelsen, men når SD er lav, blir denne justeringen mindre merkbar, spesielt i små grupper. Dette er grunnen til at SE og SD er nærme hverandre i begge grupper til tross for forskjellen i utvalgsstørrelse.
 
-
+#Eksempel på kode for klipp og lim
 ```{r}
-# Example code for copy and paste
-
 # A two facets histogram can be created with ggplot2
 results %>%
   ggplot(aes(pval)) + 
@@ -208,15 +134,14 @@ results %>%
   group_by(n) %>%
   summarise(sig_results = n()/1000)
 
-# Using the pwr package
-install.packages("pwr")
 
-library(pwr)
 
 pwr.t.test(n = 40, sig.level = 0.05, d = 1.5/3, type = "one.sample")
 ```
 #5
 ## I dette histogrammet ser me fordelingen av p-verdier fra dei to gruppene med ulik utvalgstørrelse. Her ser me at eit større utvalg vil føre til fleire signifikante p-verdier, noko som indikerer ein økt statistisk styrke med større utvalg. 
+
+
 
 # for å beregne antall statistisk signifikante. Her velger eg at terskelen for signifikans er <0.05.
 ```{r}
@@ -229,6 +154,8 @@ results %>%
 #6
 ### Her får eg verdien 0.234 for n = 8, og 0.863 for n = 40. Dette vil seie at omtrent 23,4% av desse studiene med n = 8, vil rapportere ein statistisk signifikant effekt på ( p < 0.05). Dette indikerer ein relativt lav statistisk styrke. I studien med n = 40 er det derimot omtrent 86.3% sjangse for å rapportere ein p-verdi på over 0.05. Dette er ein betydelig større sansynligheit for å oppdage ein statistisk signifikant signifikant effekt dersom det faktisk er ein reel effekt i populasjonen. 
 
+
+
 # for å kalkulere styrken på de ulike one-sample t-testene bruker jeg følgende kode
 ```{r}
 library(pwr)
@@ -239,6 +166,8 @@ pwr.t.test(n = 40, sig.level = 0.05, d = 1.5/3, type = "one.sample")
 #7
 # Den statistiske styrken til n = 8 er 0.232. Dette indikerer at det er en høg risiko for å oppnå ein type 1 feil. Dette samsvarer med resultatene fra simuleringen som sa at 23.4% av studiene med n = 8 ble signifikante. På den andre sida ser me at n = 40 ender på 0.869. Dette er ein god styrke for å oppdage en effekt. Sjølv om nokon studier ønsker en styrke på over 0.9, er dette forstatt en god indikator for å rapportere signifikante resultater. Denne styrken samvarer også godt med simuleringen, som var på 86.3% for n = 40.
 
+
+#Mange studier uten populasjonseffekten
 ```{r}
 population <- rnorm(1000000, mean = 0, sd = 3)
 
